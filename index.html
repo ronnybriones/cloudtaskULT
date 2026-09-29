@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CloudTask v1.1</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', 'Segoe UI', Arial, Helvetica, sans-serif; }
+
+    body {
+      background:
+        radial-gradient(circle at 15% 15%, rgba(99,102,241,.20), transparent 45%),
+        radial-gradient(circle at 85% 20%, rgba(168,85,247,.16), transparent 45%),
+        radial-gradient(circle at 50% 90%, rgba(14,165,233,.14), transparent 52%),
+        linear-gradient(160deg, #0f172a 0%, #1e1b4b 55%, #0f172a 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px;
+      color: #e2e8f0;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 760px;
+      background: rgba(15,23,42,.84);
+      border: 1px solid rgba(129,140,248,.30);
+      border-radius: 24px;
+      box-shadow: 0 25px 55px rgba(2,6,23,.65);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 52%, #a855f7 100%);
+      color: white;
+      padding: 32px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 82% 0%, rgba(255,255,255,.20), transparent 52%);
+    }
+    .header-icon, .header h1, .header p, .version { position: relative; z-index: 1; }
+    .header-icon {
+      width: 76px; height: 76px;
+      display: grid; place-items: center;
+      margin: 0 auto 12px;
+      background: rgba(255,255,255,.16);
+      border: 2px solid rgba(255,255,255,.45);
+      border-radius: 50%;
+      font-size: 40px;
+      box-shadow: 0 0 22px rgba(255,255,255,.28);
+    }
+    .header h1 { font-size: 38px; font-weight: 800; letter-spacing: .5px; text-shadow: 0 2px 14px rgba(2,6,23,.4); }
+    .header p { opacity: .94; font-size: 15px; margin-top: 4px; }
+
+    .version {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 7px 16px;
+      border-radius: 22px;
+      background: rgba(15,23,42,.42);
+      border: 1px solid rgba(255,255,255,.4);
+      color: #fbbf24;
+      font-size: 12.5px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .content { padding: 30px; }
+    .input-group { display: grid; grid-template-columns: 1fr 175px 135px; gap: 10px; margin-bottom: 26px; }
+
+    input[type="text"], select {
+      background: rgba(30,41,59,.85);
+      border: 1.5px solid #334155;
+      border-radius: 14px;
+      color: #f1f5f9;
+      font-size: 16px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    input[type="text"] { width: 100%; padding: 15px 18px; }
+    select {
+      appearance: none;
+      width: 100%;
+      padding: 14px 42px 14px 14px;
+      background:
+        rgba(30,41,59,.85)
+        url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a5b4cf' d='M6 2 L9 6 L3 6 Z'/%3E%3C/svg%3E")
+        no-repeat right 15px center;
+      cursor: pointer;
+    }
+    option { background: #0f172a; color: #e2e8f0; }
+    input[type="text"]::placeholder { color: #64748b; }
+    input[type="text"]:focus, select:focus {
+      outline: none;
+      border-color: #818cf8;
+      box-shadow: 0 0 0 4px rgba(129,140,248,.25);
+    }
+
+    button { cursor: pointer; }
+
+    #addTaskBtn {
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      padding: 15px 26px;
+      font-weight: 700;
+      transition: transform .15s, box-shadow .2s;
+      box-shadow: 0 6px 18px rgba(99,102,241,.38);
+    }
+    #addTaskBtn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(99,102,241,.5); }
+    #addTaskBtn:active { transform: translateY(1px); }
+
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
+
+    .filter-btn {
+      border: none;
+      background: rgba(51,65,85,.5);
+      color: #cbd5e1;
+      padding: 10px 18px;
+      border-radius: 24px;
+      font-weight: 600;
+      transition: background .2s, color .2s, transform .15s;
+    }
+    .filter-btn:hover { background: rgba(99,102,241,.28); color: #e0e7ff; transform: translateY(-1px); }
+    .filter-btn.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; box-shadow: 0 4px 14px rgba(99,102,241,.45); }
+
+    .clear-btn {
+      border: 1.5px solid rgba(239,68,68,.35);
+      background: rgba(239,68,68,.14);
+      color: #f87171;
+      padding: 10px 18px;
+      border-radius: 24px;
+      font-weight: 700;
+      transition: background .2s, transform .15s;
+    }
+    .clear-btn:hover { background: rgba(239,68,68,.3); color: #fca5a5; transform: translateY(-1px); }
+
+    .task-list { list-style: none; }
+
+    .task {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: rgba(30,41,59,.72);
+      border: 1px solid rgba(100,116,139,.35);
+      border-radius: 14px;
+      padding: 15px 18px;
+      margin-bottom: 12px;
+      transition: transform .15s, border-color .2s, box-shadow .2s;
+    }
+    .task:hover { border-color: rgba(129,140,248,.65); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(2,6,23,.5); }
+    .task-left { display: flex; align-items: center; gap: 14px; }
+    input[type="checkbox"] { width: 22px; height: 22px; accent-color: #8b5cf6; cursor: pointer; }
+    .task.completed { background: rgba(15,23,42,.5); border-left: 4px solid #22c55e; }
+    .task.completed .task-text { text-decoration: line-through; color: #64748b; }
+    .task.completed .priority { opacity: .55; }
+
+    .task-info { display: flex; flex-direction: column; gap: 5px; }
+
+    .priority {
+      width: fit-content;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .priority-baja { background: rgba(34,197,94,.16); color: #4ade80; }
+    .priority-baja::before { content: "🔹 "; }
+    .priority-media { background: rgba(245,158,11,.16); color: #fbbf24; }
+    .priority-media::before { content: "🔸 "; }
+    .priority-alta { background: rgba(239,68,68,.16); color: #f87171; }
+    .priority-alta::before { content: "🔺 "; }
+
+    .delete-btn {
+      border: none;
+      background: rgba(239,68,68,.16);
+      color: #f87171;
+      padding: 9px 13px;
+      border-radius: 10px;
+      transition: background .2s, transform .15s;
+    }
+    .delete-btn::before { content: "🗑 "; }
+    .delete-btn:hover { background: rgba(239,68,68,.34); transform: scale(1.06); }
+
+    .summary {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .summary-card {
+      background: rgba(30,58,138,.32);
+      border: 1px solid rgba(129,140,248,.45);
+      border-radius: 14px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: #e0e7ff;
+      font-weight: 600;
+    }
+    .summary-card strong {
+      display: inline-grid;
+      place-items: center;
+      min-width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      font-weight: 800; font-size: 18px;
+      box-shadow: 0 4px 12px rgba(99,102,241,.55);
+    }
+
+    .empty { text-align: center; color: #94a3b8; padding: 32px; font-size: 15px; }
+    .empty::before { content: "☁ "; }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2,6,23,.68);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: rgba(15,23,42,.96);
+      border: 1px solid rgba(129,140,248,.4);
+      border-radius: 16px;
+      padding: 22px 26px;
+      max-width: 360px;
+      text-align: center;
+      color: #e2e8f0;
+      box-shadow: 0 18px 40px rgba(2,6,23,.75);
+    }
+    .modal-box p { font-size: 15px; margin-bottom: 16px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: center; }
+    .modal-cancel {
+      border: 1px solid rgba(148,163,184,.35);
+      background: rgba(51,65,85,.55);
+      color: #cbd5e1;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .modal-cancel:hover { background: rgba(71,85,105,.6); }
+    .modal-ok {
+      border: none;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s;
+    }
+    .modal-ok:hover { transform: translateY(-1px); }
+
+    footer {
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,.12);
+      padding: 20px;
+      font-size: 13px;
+      color: #a3b0c6;
+    }
+    .dev-title { color: #e2e8f0; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+    .dev-names { line-height: 1.75; color: #b8c3d8; font-size: 13.5px; }
+    .footer-meta { margin-top: 10px; color: #8494ad; font-size: 12.5px; }
+
+    @media (max-width: 700px) {
+      .input-group,
+      .summary {
+        grid-template-columns: 1fr;
+      }
+      .header h1 { font-size: 28px; }
+      .header-icon { width: 60px; height: 60px; font-size: 30px; }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <div class="header-icon">☁</div>
+    <h1>CloudTask</h1>
+    <p>🚀 Gestor de tareas interactivo</p>
+    <span class="version">Versión 1.1</span>
+  </div>
+
+  <div class="content">
+
+    <div class="input-group">
+      <input id="taskInput" type="text" placeholder="Escribe una nueva tarea...">
+      <select id="prioritySelect">
+        <option value="baja">Prioridad baja</option>
+        <option value="media" selected>Prioridad media</option>
+        <option value="alta">Prioridad alta</option>
+      </select>
+      <button id="addTaskBtn">➕ Agregar</button>
+    </div>
+
+    <div class="toolbar">
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">🗂️ Todas</button>
+        <button class="filter-btn" data-filter="pending">⏳ Pendientes</button>
+        <button class="filter-btn" data-filter="completed">✅ Completadas</button>
+      </div>
+      <button id="clearCompletedBtn" class="clear-btn">🧹 Eliminar completadas</button>
+    </div>
+
+    <ul id="taskList" class="task-list"></ul>
+
+    <div class="summary">
+      <div class="summary-card">
+        📋 Total de tareas
+        <strong id="totalCount">0</strong>
+      </div>
+      <div class="summary-card">
+        ⏰ Tareas pendientes
+        <strong id="pendingCount">0</strong>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="credits">
+      <p class="dev-title">✨ Desarrollado por:</p>
+      <p class="dev-names">Ronny Yonaiquer Briones Sornoza</p>
+      <p class="dev-names">Julio Tommy Alava Rodrigez</p>
+      <p class="dev-names">Franklin Jonathan Cedeño Farfan</p>
+    </div>
+    <div class="footer-meta">CloudTask · Versión 1.1 · GitHub + Vercel / Netlify</div>
+  </footer>
+
+</div>
+
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="modal-box">
+    <p id="confirmMessage">¿Eliminar todas las tareas completadas?</p>
+    <div class="modal-actions">
+      <button class="modal-cancel" id="confirmNo">Cancelar</button>
+      <button class="modal-ok" id="confirmYes">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const taskInput = document.getElementById("taskInput");
+  const prioritySelect = document.getElementById("prioritySelect");
+  const addTaskBtn = document.getElementById("addTaskBtn");
+  const taskList = document.getElementById("taskList");
+  const pendingCount = document.getElementById("pendingCount");
+  const totalCount = document.getElementById("totalCount");
+  const filterButtons = document.querySelectorAll(".filter-btn");
+  const clearCompletedBtn =
+    document.getElementById("clearCompletedBtn");
+  const confirmOverlay = document.getElementById("confirmOverlay");
+  const confirmMessage = document.getElementById("confirmMessage");
+  const confirmYes = document.getElementById("confirmYes");
+  const confirmNo = document.getElementById("confirmNo");
+
+  let currentFilter = "all";
+  let confirmCallback = null;
+
+  let tasks =
+    JSON.parse(localStorage.getItem("cloudTaskTasks"));
+
+  if (!tasks) {
+    tasks = [
+      {
+        id: 1,
+        text: "Subir proyecto a GitHub",
+        completed: false,
+        priority: "alta"
+      },
+      {
+        id: 2,
+        text: "Desplegar aplicación en Vercel",
+        completed: false,
+        priority: "media"
+      },
+      {
+        id: 3,
+        text: "Probar aplicación desde el teléfono",
+        completed: true,
+        priority: "baja"
+      }
+    ];
+  }
+
+  function saveTasks() {
+    localStorage.setItem(
+      "cloudTaskTasks",
+      JSON.stringify(tasks)
+    );
+  }
+
+  function askConfirm(message, callback) {
+    confirmMessage.textContent = message;
+    confirmCallback = callback;
+    confirmOverlay.classList.add("show");
+  }
+
+  confirmYes.addEventListener("click", function() {
+    confirmOverlay.classList.remove("show");
+
+    if (confirmCallback) {
+      const action = confirmCallback;
+      confirmCallback = null;
+      action();
+    }
+  });
+
+  confirmNo.addEventListener("click", function() {
+    confirmOverlay.classList.remove("show");
+    confirmCallback = null;
+  });
+
+  function renderTasks() {
+    taskList.innerHTML = "";
+
+    const filteredTasks = tasks.filter(task => {
+      if (currentFilter === "pending") return !task.completed;
+      if (currentFilter === "completed") return task.completed;
+      return true;
+    });
+
+    if (filteredTasks.length === 0) {
+      taskList.innerHTML =
+        '<li class="empty">No hay tareas para mostrar</li>';
+    }
+
+    const priorityText = {
+      baja: "Baja",
+      media: "Media",
+      alta: "Alta"
+    };
+
+    filteredTasks.forEach(task => {
+      const li = document.createElement("li");
+
+      li.className = "task";
+
+      if (task.completed) {
+        li.classList.add("completed");
+      }
+
+      li.innerHTML = `
+        <div class="task-left">
+          <input
+            type="checkbox"
+            ${task.completed ? "checked" : ""}
+            onchange="toggleTask(${task.id})"
+          >
+
+          <div class="task-info">
+            <span class="task-text">
+              ${task.text}
+            </span>
+
+            <span class="priority priority-${task.priority}">
+              Prioridad ${priorityText[task.priority]}
+            </span>
+          </div>
+        </div>
+
+        <button
+          class="delete-btn"
+          onclick="deleteTask(${task.id})"
+        >
+          Eliminar
+        </button>
+      `;
+
+      taskList.appendChild(li);
+    });
+
+    updateCounters();
+    saveTasks();
+  }
+
+  function addTask() {
+    const text = taskInput.value.trim();
+
+    if (text === "") {
+      alert("Escribe una tarea.");
+      return;
+    }
+
+    tasks.push({
+      id: Date.now(),
+      text,
+      completed: false,
+      priority: prioritySelect.value
+    });
+
+    taskInput.value = "";
+    prioritySelect.value = "media";
+
+    renderTasks();
+  }
+
+  function toggleTask(id) {
+    tasks = tasks.map(task =>
+      task.id === id
+        ? { ...task, completed: !task.completed }
+        : task
+    );
+
+    renderTasks();
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(task => task.id !== id);
+    renderTasks();
+  }
+
+  function clearCompletedTasks() {
+    if (!tasks.some(task => task.completed)) {
+      alert("No hay tareas completadas.");
+      return;
+    }
+
+    askConfirm(
+      "¿Eliminar todas las tareas completadas?",
+      function() {
+        tasks = tasks.filter(task => !task.completed);
+        renderTasks();
+      }
+    );
+  }
+
+  function updateCounters() {
+    totalCount.textContent = tasks.length;
+
+    pendingCount.textContent =
+      tasks.filter(task => !task.completed).length;
+  }
+
+  addTaskBtn.addEventListener("click", addTask);
+
+  taskInput.addEventListener("keypress", event => {
+    if (event.key === "Enter") addTask();
+  });
+
+  clearCompletedBtn.addEventListener(
+    "click",
+    clearCompletedTasks
+  );
+
+  filterButtons.forEach(button => {
+    button.addEventListener("click", function() {
+      filterButtons.forEach(btn =>
+        btn.classList.remove("active")
+      );
+
+      this.classList.add("active");
+      currentFilter = this.dataset.filter;
+
+      renderTasks();
+    });
+  });
+
+  renderTasks();
+</script>
+
+</body>
+</html>
