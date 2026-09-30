@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CloudTask v1.1</title>
+  <title>CloudTask v1.2</title>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
@@ -26,7 +26,7 @@
 
     .app {
       width: 100%;
-      max-width: 760px;
+      max-width: 920px;
       background: rgba(15,23,42,.84);
       border: 1px solid rgba(129,140,248,.30);
       border-radius: 24px;
@@ -76,9 +76,9 @@
     }
 
     .content { padding: 30px; }
-    .input-group { display: grid; grid-template-columns: 1fr 175px 135px; gap: 10px; margin-bottom: 26px; }
+    .input-group { display: grid; grid-template-columns: 1fr 150px 155px 135px; gap: 10px; margin-bottom: 20px; }
 
-    input[type="text"], select {
+    input[type="text"], input[type="date"], select {
       background: rgba(30,41,59,.85);
       border: 1.5px solid #334155;
       border-radius: 14px;
@@ -97,9 +97,18 @@
         no-repeat right 15px center;
       cursor: pointer;
     }
+    input[type="date"] {
+      width: 100%;
+      padding: 13px 12px;
+      color-scheme: dark;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
     option { background: #0f172a; color: #e2e8f0; }
     input[type="text"]::placeholder { color: #64748b; }
-    input[type="text"]:focus, select:focus {
+    input[type="text"]:focus, input[type="date"]:focus, select:focus {
       outline: none;
       border-color: #818cf8;
       box-shadow: 0 0 0 4px rgba(129,140,248,.25);
@@ -120,9 +129,11 @@
     #addTaskBtn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(99,102,241,.5); }
     #addTaskBtn:active { transform: translateY(1px); }
 
-    .filters { display: flex; gap: 10px; flex-wrap: wrap; }
+    .control-panel { display: grid; grid-template-columns: 1fr 200px; gap: 10px; margin-bottom: 22px; }
 
     .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
+
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; }
 
     .filter-btn {
       border: none;
@@ -152,7 +163,7 @@
     .task {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
       background: rgba(30,41,59,.72);
       border: 1px solid rgba(100,116,139,.35);
@@ -162,27 +173,42 @@
       transition: transform .15s, border-color .2s, box-shadow .2s;
     }
     .task:hover { border-color: rgba(129,140,248,.65); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(2,6,23,.5); }
-    .task-left { display: flex; align-items: center; gap: 14px; }
-    input[type="checkbox"] { width: 22px; height: 22px; accent-color: #8b5cf6; cursor: pointer; }
+    .task-left { display: flex; align-items: flex-start; gap: 14px; }
+    input[type="checkbox"] { width: 22px; height: 22px; accent-color: #8b5cf6; cursor: pointer; margin-top: 4px; }
     .task.completed { background: rgba(15,23,42,.5); border-left: 4px solid #22c55e; }
     .task.completed .task-text { text-decoration: line-through; color: #64748b; }
-    .task.completed .priority { opacity: .55; }
+    .task.overdue { border-left: 4px solid #ef4444; }
 
-    .task-info { display: flex; flex-direction: column; gap: 5px; }
+    .task-info { display: flex; flex-direction: column; gap: 6px; }
 
-    .priority {
-      width: fit-content;
-      padding: 2px 10px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 700;
-    }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; }
+
+    .priority { padding: 2px 10px; border-radius: 12px; font-weight: 700; width: fit-content; }
     .priority-baja { background: rgba(34,197,94,.16); color: #4ade80; }
     .priority-baja::before { content: "🔹 "; }
     .priority-media { background: rgba(245,158,11,.16); color: #fbbf24; }
     .priority-media::before { content: "🔸 "; }
     .priority-alta { background: rgba(239,68,68,.16); color: #f87171; }
     .priority-alta::before { content: "🔺 "; }
+
+    .date-badge { background: rgba(14,165,233,.16); color: #38bdf8; }
+    .date-badge::before { content: "📅 "; }
+    .overdue-badge { background: rgba(239,68,68,.18); color: #f87171; }
+    .overdue-badge::before { content: "⚠️ "; }
+    .task.completed .meta { opacity: .55; }
+
+    .actions { display: flex; gap: 8px; }
+
+    .edit-btn {
+      border: none;
+      background: rgba(14,165,233,.16);
+      color: #38bdf8;
+      padding: 9px 12px;
+      border-radius: 10px;
+      transition: background .2s, transform .15s;
+    }
+    .edit-btn::before { content: "✏️ "; }
+    .edit-btn:hover { background: rgba(14,165,233,.32); transform: translateY(-1px); }
 
     .delete-btn {
       border: none;
@@ -198,7 +224,7 @@
     .summary {
       margin-top: 24px;
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 12px;
     }
 
@@ -227,6 +253,17 @@
 
     .empty { text-align: center; color: #94a3b8; padding: 32px; font-size: 15px; }
     .empty::before { content: "☁ "; }
+
+    footer {
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,.12);
+      padding: 20px;
+      font-size: 13px;
+      color: #a3b0c6;
+    }
+    .dev-title { color: #e2e8f0; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+    .dev-names { line-height: 1.75; color: #b8c3d8; font-size: 13.5px; }
+    .footer-meta { margin-top: 10px; color: #8494ad; font-size: 12.5px; }
 
     .modal-overlay {
       position: fixed;
@@ -273,22 +310,13 @@
     }
     .modal-ok:hover { transform: translateY(-1px); }
 
-    footer {
-      text-align: center;
-      border-top: 1px solid rgba(255,255,255,.12);
-      padding: 20px;
-      font-size: 13px;
-      color: #a3b0c6;
-    }
-    .dev-title { color: #e2e8f0; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
-    .dev-names { line-height: 1.75; color: #b8c3d8; font-size: 13.5px; }
-    .footer-meta { margin-top: 10px; color: #8494ad; font-size: 12.5px; }
-
-    @media (max-width: 700px) {
+    @media (max-width: 800px) {
       .input-group,
+      .control-panel,
       .summary {
         grid-template-columns: 1fr;
       }
+      .task { flex-direction: column; }
       .header h1 { font-size: 28px; }
       .header-icon { width: 60px; height: 60px; font-size: 30px; }
     }
@@ -303,7 +331,7 @@
     <div class="header-icon">☁</div>
     <h1>CloudTask</h1>
     <p>🚀 Gestor de tareas interactivo</p>
-    <span class="version">Versión 1.1</span>
+    <span class="version">Versión 1.2</span>
   </div>
 
   <div class="content">
@@ -315,7 +343,17 @@
         <option value="media" selected>Prioridad media</option>
         <option value="alta">Prioridad alta</option>
       </select>
+      <input id="dueDateInput" type="date" title="Fecha límite">
       <button id="addTaskBtn">➕ Agregar</button>
+    </div>
+
+    <div class="control-panel">
+      <input id="searchInput" type="text" placeholder="🔍 Buscar tareas...">
+      <select id="sortSelect">
+        <option value="default">Orden original</option>
+        <option value="priority">Por prioridad</option>
+        <option value="date">Por fecha límite</option>
+      </select>
     </div>
 
     <div class="toolbar">
@@ -331,12 +369,16 @@
 
     <div class="summary">
       <div class="summary-card">
-        📋 Total de tareas
+        📋 Total
         <strong id="totalCount">0</strong>
       </div>
       <div class="summary-card">
-        ⏰ Tareas pendientes
+        ⏰ Pendientes
         <strong id="pendingCount">0</strong>
+      </div>
+      <div class="summary-card">
+        ⛔ Vencidas
+        <strong id="overdueCount">0</strong>
       </div>
     </div>
 
@@ -349,7 +391,7 @@
       <p class="dev-names">Julio Tommy Alava Rodrigez</p>
       <p class="dev-names">Franklin Jonathan Cedeño Farfan</p>
     </div>
-    <div class="footer-meta">CloudTask · Versión 1.1 · GitHub + Vercel / Netlify</div>
+    <div class="footer-meta">CloudTask · Versión 1.2 · GitHub + Vercel / Netlify</div>
   </footer>
 
 </div>
@@ -367,19 +409,23 @@
 <script>
   const taskInput = document.getElementById("taskInput");
   const prioritySelect = document.getElementById("prioritySelect");
+  const dueDateInput = document.getElementById("dueDateInput");
   const addTaskBtn = document.getElementById("addTaskBtn");
   const taskList = document.getElementById("taskList");
-  const pendingCount = document.getElementById("pendingCount");
   const totalCount = document.getElementById("totalCount");
+  const pendingCount = document.getElementById("pendingCount");
+  const overdueCount = document.getElementById("overdueCount");
   const filterButtons = document.querySelectorAll(".filter-btn");
-  const clearCompletedBtn =
-    document.getElementById("clearCompletedBtn");
+  const clearCompletedBtn = document.getElementById("clearCompletedBtn");
+  const searchInput = document.getElementById("searchInput");
+  const sortSelect = document.getElementById("sortSelect");
   const confirmOverlay = document.getElementById("confirmOverlay");
   const confirmMessage = document.getElementById("confirmMessage");
   const confirmYes = document.getElementById("confirmYes");
   const confirmNo = document.getElementById("confirmNo");
 
   let currentFilter = "all";
+  let editingId = null;
   let confirmCallback = null;
 
   let tasks =
@@ -391,19 +437,22 @@
         id: 1,
         text: "Subir proyecto a GitHub",
         completed: false,
-        priority: "alta"
+        priority: "alta",
+        dueDate: ""
       },
       {
         id: 2,
         text: "Desplegar aplicación en Vercel",
         completed: false,
-        priority: "media"
+        priority: "media",
+        dueDate: ""
       },
       {
         id: 3,
         text: "Probar aplicación desde el teléfono",
         completed: true,
-        priority: "baja"
+        priority: "baja",
+        dueDate: ""
       }
     ];
   }
@@ -436,16 +485,70 @@
     confirmCallback = null;
   });
 
+  function isOverdue(task) {
+    if (!task.dueDate || task.completed) {
+      return false;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const due = new Date(task.dueDate + "T00:00:00");
+
+    return due < today;
+  }
+
   function renderTasks() {
     taskList.innerHTML = "";
 
-    const filteredTasks = tasks.filter(task => {
-      if (currentFilter === "pending") return !task.completed;
-      if (currentFilter === "completed") return task.completed;
-      return true;
-    });
+    let visibleTasks = [...tasks];
 
-    if (filteredTasks.length === 0) {
+    if (currentFilter === "pending") {
+      visibleTasks =
+        visibleTasks.filter(task => !task.completed);
+    }
+
+    if (currentFilter === "completed") {
+      visibleTasks =
+        visibleTasks.filter(task => task.completed);
+    }
+
+    const searchText =
+      searchInput.value.toLowerCase().trim();
+
+    if (searchText) {
+      visibleTasks =
+        visibleTasks.filter(task =>
+          task.text.toLowerCase().includes(searchText)
+        );
+    }
+
+    if (sortSelect.value === "priority") {
+      const order = {
+        alta: 1,
+        media: 2,
+        baja: 3
+      };
+
+      visibleTasks.sort(
+        (a, b) =>
+          order[a.priority] - order[b.priority]
+      );
+    }
+
+    if (sortSelect.value === "date") {
+      visibleTasks.sort((a, b) => {
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+
+        return (
+          new Date(a.dueDate) -
+          new Date(b.dueDate)
+        );
+      });
+    }
+
+    if (visibleTasks.length === 0) {
       taskList.innerHTML =
         '<li class="empty">No hay tareas para mostrar</li>';
     }
@@ -456,7 +559,7 @@
       alta: "Alta"
     };
 
-    filteredTasks.forEach(task => {
+    visibleTasks.forEach(task => {
       const li = document.createElement("li");
 
       li.className = "task";
@@ -464,6 +567,20 @@
       if (task.completed) {
         li.classList.add("completed");
       }
+
+      if (isOverdue(task)) {
+        li.classList.add("overdue");
+      }
+
+      const dateHtml = task.dueDate
+        ? `<span class="date-badge">
+             Fecha: ${task.dueDate}
+           </span>`
+        : "";
+
+      const overdueHtml = isOverdue(task)
+        ? '<span class="overdue-badge">Vencida</span>'
+        : "";
 
       li.innerHTML = `
         <div class="task-left">
@@ -478,18 +595,33 @@
               ${task.text}
             </span>
 
-            <span class="priority priority-${task.priority}">
-              Prioridad ${priorityText[task.priority]}
-            </span>
+            <div class="meta">
+              <span class="priority priority-${task.priority}">
+                Prioridad ${priorityText[task.priority]}
+              </span>
+
+              ${dateHtml}
+
+              ${overdueHtml}
+            </div>
           </div>
         </div>
 
-        <button
-          class="delete-btn"
-          onclick="deleteTask(${task.id})"
-        >
-          Eliminar
-        </button>
+        <div class="actions">
+          <button
+            class="edit-btn"
+            onclick="editTask(${task.id})"
+          >
+            Editar
+          </button>
+
+          <button
+            class="delete-btn"
+            onclick="deleteTask(${task.id})"
+          >
+            Eliminar
+          </button>
+        </div>
       `;
 
       taskList.appendChild(li);
@@ -499,31 +631,71 @@
     saveTasks();
   }
 
-  function addTask() {
+  function addOrUpdateTask() {
     const text = taskInput.value.trim();
 
-    if (text === "") {
+    if (!text) {
       alert("Escribe una tarea.");
       return;
     }
 
-    tasks.push({
-      id: Date.now(),
-      text,
-      completed: false,
-      priority: prioritySelect.value
-    });
+    const priority = prioritySelect.value;
+    const dueDate = dueDateInput.value;
+
+    if (editingId !== null) {
+      tasks = tasks.map(task =>
+        task.id === editingId
+          ? {
+              ...task,
+              text,
+              priority,
+              dueDate
+            }
+          : task
+      );
+
+      editingId = null;
+      addTaskBtn.textContent = "➕ Agregar";
+
+    } else {
+      tasks.push({
+        id: Date.now(),
+        text,
+        completed: false,
+        priority,
+        dueDate
+      });
+    }
 
     taskInput.value = "";
     prioritySelect.value = "media";
+    dueDateInput.value = "";
 
     renderTasks();
+  }
+
+  function editTask(id) {
+    const task = tasks.find(task => task.id === id);
+
+    if (!task) return;
+
+    taskInput.value = task.text;
+    prioritySelect.value = task.priority;
+    dueDateInput.value = task.dueDate || "";
+
+    editingId = id;
+
+    addTaskBtn.textContent = "✏️ Guardar";
+    taskInput.focus();
   }
 
   function toggleTask(id) {
     tasks = tasks.map(task =>
       task.id === id
-        ? { ...task, completed: !task.completed }
+        ? {
+            ...task,
+            completed: !task.completed
+          }
         : task
     );
 
@@ -555,18 +727,27 @@
 
     pendingCount.textContent =
       tasks.filter(task => !task.completed).length;
+
+    overdueCount.textContent =
+      tasks.filter(isOverdue).length;
   }
 
-  addTaskBtn.addEventListener("click", addTask);
+  addTaskBtn.addEventListener("click", addOrUpdateTask);
 
   taskInput.addEventListener("keypress", event => {
-    if (event.key === "Enter") addTask();
+    if (event.key === "Enter") {
+      addOrUpdateTask();
+    }
   });
 
   clearCompletedBtn.addEventListener(
     "click",
     clearCompletedTasks
   );
+
+  searchInput.addEventListener("input", renderTasks);
+
+  sortSelect.addEventListener("change", renderTasks);
 
   filterButtons.forEach(button => {
     button.addEventListener("click", function() {
